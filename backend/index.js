@@ -8,7 +8,7 @@ import pollRouter from './route/pollRouter.js'
 import commentRoutes from './route/commentRouter.js'
 import userRouter from './route/userRouter.js'
 
-const PORT = 5000
+const PORT = process.env.PORT || 5000;
 const app = express()
 
 
