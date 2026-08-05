@@ -41,8 +41,12 @@ export default function LoginPage() {
         navigate("/signup", {
           state: { needsVerification: true, email: data.email || email },
         });
+      } else if (data?.message) {
+        setError(data.message);
+      } else if (!err.response || err.code === "ERR_NETWORK" || err.message === "Network Error") {
+        setError("Network Error: Unable to connect to the server. Please check your connection or backend status.");
       } else {
-        setError(data?.message || "Invalid credentials. Please try again.");
+        setError("Invalid credentials. Please try again.");
       }
     } finally {
       setLoading(false);

@@ -83,7 +83,7 @@ export default function SignupPage() {
       setTimer(60);
       setCanResend(false);
     } catch (err) {
-      const msg = err.response?.data?.message || err.message || "Registration failed. Please try again.";
+      const msg = err.response?.data?.message || (!err.response ? "Network Error: Unable to connect to the server." : "Registration failed. Please try again.");
       setError(msg);
     } finally {
       setLoading(false);
@@ -105,7 +105,8 @@ export default function SignupPage() {
       showToast("Email verified! Welcome to Pollify.");
       navigate("/dashboard", { replace: true });
     } catch (err) {
-      setError(err.response?.data?.message || "Invalid or expired OTP.");
+      const msg = err.response?.data?.message || (!err.response ? "Network Error: Unable to connect to the server." : "Invalid or expired OTP.");
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -119,7 +120,8 @@ export default function SignupPage() {
       setTimer(60);
       setCanResend(false);
     } catch (err) {
-      showToast(err.response?.data?.message || "Failed to resend OTP", "error");
+      const msg = err.response?.data?.message || (!err.response ? "Network Error: Unable to connect to the server." : "Failed to resend OTP");
+      showToast(msg, "error");
     }
   };
 

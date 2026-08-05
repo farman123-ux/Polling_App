@@ -17,6 +17,7 @@ export function AuthProvider({ children }) {
       setStats(data.stats || { created: 0, voted: 0, bookmarked: 0 });
     } catch (error) {
       setUser(null);
+      localStorage.removeItem("token");
     } finally {
       setLoading(false);
     }
@@ -28,8 +29,9 @@ export function AuthProvider({ children }) {
   }, []);
 
   // Save token to localStorage and load user
-  const saveToken = async (token) => {
+  const saveToken = async (token, initialUser = null) => {
     localStorage.setItem("token", token);
+    if (initialUser) setUser(initialUser);
     await loadMe();
   };
 
@@ -43,7 +45,7 @@ export function AuthProvider({ children }) {
   const verifyOtp = async (payload) => {
     const { data } = await api.post("/auth/verify-otp", payload);
     if (data.token) {
-      await saveToken(data.token);
+      await saveToken(data.token, data.user);
     }
     return data;
   };
@@ -55,7 +57,7 @@ export function AuthProvider({ children }) {
   const login = async (payload) => {
     const { data } = await api.post("/auth/login", payload);
     if (data.token) {
-      await saveToken(data.token);
+      await saveToken(data.token, data.user);
     }
     return data;
   };

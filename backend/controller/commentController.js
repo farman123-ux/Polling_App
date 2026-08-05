@@ -30,7 +30,7 @@ export const addComment = async (req,res) => {
         parent : req.body.parent || null,
         text
     })
-    const populated = await comment.populate("user", "name username avator")
+    const populated = await comment.populate("user", "name username avatar")
     const poll = await Poll.findById(req.params.pollId).select('creator')
     if(poll) 
         await notify({

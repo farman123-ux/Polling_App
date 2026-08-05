@@ -6,7 +6,8 @@ import { generatOtp, optValid, otpExpiry } from "../utils/otp.js"
 import { sendOtpEmail } from "../config/mailer.js"
 import jwt from 'jsonwebtoken'
 
-const makeToken = (id) => jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "7d" })
+const JWT_SECRET = process.env.JWT_SECRET || "pollify_super_secret_jwt_key_2026"
+const makeToken = (id) => jwt.sign({ id }, JWT_SECRET, { expiresIn: "7d" })
 const clean = (u) => ({
     _id: u._id,
     name: u.name,
@@ -19,14 +20,43 @@ const clean = (u) => ({
 export const register = async (req, res) => {
     try {
         const { name, email, username, password } = req.body
+
         if (!name || !email || !username || !password) {
             return res.status(400).json({ message: "All fields are required" })
         }
 
-        const exists = await User.findOne({ $or: [{ email }, { username }] })
-        if (exists) return res.status(400).json({
-            message: "Email or username already taken"
-        })
+        let user = await User.findOne({ $or: [{ email }, { username }] })
+        if (user) {
+            if (user.isVerified) {
+                return res.status(400).json({
+                    message: "Email or username already taken"
+                })
+            }
+            // User exists but is not verified yet: update info and generate fresh OTP
+            let avatar = user.avatar
+            if (req.file) {
+                try {
+                    avatar = await uploadToCloudinary(req.file.buffer)
+                } catch (e) {
+                    console.warn("Avatar upload skipped: ", e.message)
+                }
+            }
+            user.name = name
+            user.email = email
+            user.username = username
+            user.password = password
+            user.avatar = avatar
+            const otp = generatOtp()
+            user.otp = otp
+            user.otpExpires = otpExpiry()
+            await user.save()
+
+            await sendOtpEmail(email, otp, "Verify your pollify account")
+            return res.status(200).json({
+                needsVerification: true,
+                email
+            })
+        }
 
         let avatar = ""
         if (req.file) {
@@ -206,7 +236,7 @@ export const getMe = async (req, res) => {
             stats: {
                 created,
                 voted,
-                bookmarked: user.bookmarks.length
+                bookmarked: user.bookmarks ? user.bookmarks.length : 0
             }
         })
     } catch (err) {
