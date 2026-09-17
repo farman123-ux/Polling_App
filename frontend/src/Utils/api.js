@@ -2,7 +2,19 @@ import axios from 'axios';
 
 // Determine base URL dynamically based on environment
 const envUrl = import.meta.env.VITE_API_URL;
-const baseURL = envUrl && envUrl.startsWith("http") ? envUrl : "/api";
+let baseURL = "/api";
+
+if (envUrl && typeof envUrl === "string" && envUrl.trim() !== "") {
+  let cleanUrl = envUrl.trim();
+  // If loaded on HTTPS, upgrade http to https to prevent Mixed Content network errors
+  if (typeof window !== "undefined" && window.location.protocol === "https:" && cleanUrl.startsWith("http:")) {
+    cleanUrl = cleanUrl.replace(/^http:/, "https:");
+  }
+  if (cleanUrl.startsWith("http")) {
+    cleanUrl = cleanUrl.replace(/\/+$/, "");
+    baseURL = cleanUrl.endsWith("/api") ? cleanUrl : `${cleanUrl}/api`;
+  }
+}
 
 const api = axios.create({ baseURL });
 
