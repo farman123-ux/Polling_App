@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://fk160061_db_user:5wgn0gXaL66IfrWj@cluster0.jytbqvx.mongodb.net/pollify?retryWrites=true&w=majority";
+const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://fk160061_db_user:KGUwiJMDc5vDnsdB@cluster0.ys0hrcz.mongodb.net/?appName=Cluster0";
 
 export const connectdb = async () => {
   // If already connected, return
